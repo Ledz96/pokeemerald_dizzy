@@ -1,7 +1,8 @@
 #ifndef GUARD_CONSTANTS_BATTLE_CONFIG_H
 #define GUARD_CONSTANTS_BATTLE_CONFIG_H
 
-// Species with peculiar battle effects. Remove them if they're properly placed in constant/species.h
+/*
+Species with peculiar battle effects. Remove them if they're properly placed in constant/species.h
 #define SPECIES_DIALGA 0
 #define SPECIES_PALKIA 0
 #define SPECIES_GIRATINA 0
@@ -13,8 +14,10 @@
 #define SPECIES_AEGISLASH_BLADE 10000
 #define SPECIES_MIMIKYU 0
 #define SPECIES_MIMIKYU_BUSTED 10001
+*/
 
-// Items with peculiar battle effects. Remove them if they're properly placed in constant/items.h
+/*
+Items with peculiar battle effects. Remove them if they're properly placed in constant/items.h
 #define ITEM_GRISEOUS_ORB 0
 #define ITEM_OCCA_BERRY 204
 #define ITEM_PASSHO_BERRY 205
@@ -40,6 +43,7 @@
 #define ITEM_ROWAP_BERRY 201
 #define ITEM_KEE_BERRY 202
 #define ITEM_MARANGA_BERRY 203
+*/
 
 #define GEN_3 0
 #define GEN_4 1
