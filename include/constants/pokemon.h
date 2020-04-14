@@ -12,7 +12,7 @@
 #define TYPE_BUG              6
 #define TYPE_GHOST            7
 #define TYPE_STEEL            8
-#define TYPE_MYSTERY          9
+#define TYPE_MYSTERY          9      //TODO: Delete type mystery, fix Curse (Ghost), Eggs (Normal)
 #define TYPE_FIRE             10
 #define TYPE_WATER            11
 #define TYPE_GRASS            12
@@ -114,7 +114,7 @@
 #define SPLIT_STATUS    0x2
 
 // Shiny odds
-#define SHINY_ODDS 8 // Actual probability is SHINY_ODDS/65536
+#define SHINY_ODDS 16 // Actual probability is SHINY_ODDS/65536
 #define SHINY_CHARM_REROLLS 3 // Amount of re-rolls if has Shiny Charm.
 
 // Flags for Get(Box)MonData / Set(Box)MonData

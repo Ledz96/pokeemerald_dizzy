@@ -317,6 +317,7 @@ const struct OamData gOamData_831ACB0 =
 
 static const s8 gUnknown_0831ACE0[] ={-32, -16, -16, -32, -32, 0, 0, 0};
 
+//TODO: Decapitalize
 const u8 gTypeNames[NUMBER_OF_MON_TYPES][TYPE_NAME_LENGTH + 1] =
 {
     _("NORMAL"),
@@ -328,7 +329,7 @@ const u8 gTypeNames[NUMBER_OF_MON_TYPES][TYPE_NAME_LENGTH + 1] =
     _("BUG"),
     _("GHOST"),
     _("STEEL"),
-    _("???"),
+    _("???"),           //TODO: Delete
     _("FIRE"),
     _("WATER"),
     _("GRASS"),
@@ -340,7 +341,9 @@ const u8 gTypeNames[NUMBER_OF_MON_TYPES][TYPE_NAME_LENGTH + 1] =
     _("FAIRY"),
 };
 
-// This is a factor in how much money you get for beating a trainer.
+/**
+ * Defines how much money you get for beating a trainer.
+ */
 const struct TrainerMoney gTrainerMoneyTable[] =
 {
     {TRAINER_CLASS_TEAM_AQUA, 5},

@@ -26,6 +26,12 @@ struct BattleAnimBgData
     u16 unused;
 };
 
+/**
+ * Contains information about a background for a battle animation.
+ * @field image: background image for the animation.
+ * @field palette: palette for the background image.
+ * @field tilemap: ?
+ */
 struct BattleAnimBackground
 {
     const u32 *image;

@@ -1,6 +1,9 @@
 #ifndef GUARD_CONSTANTS_BATTLE_MOVE_EFFECTS_H
 #define GUARD_CONSTANTS_BATTLE_MOVE_EFFECTS_H
 
+//Each effect has a 1 to 1 corrispondence with one in the gBattleScriptsForMoveEffects table in battle_script_command.s 
+//Order matters, as it's the only way the two tables can be connected.
+
 #define EFFECT_HIT 0
 #define EFFECT_SLEEP 1
 #define EFFECT_POISON_HIT 2

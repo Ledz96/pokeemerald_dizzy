@@ -4,6 +4,9 @@
 #include "constants/pokemon.h"
 #include "sprite.h"
 
+/**
+ * Contains data about the Pokemon's species, held item, experience, friendship level and pps.
+ */
 struct PokemonSubstruct0
 {
     u16 species;
@@ -13,12 +16,18 @@ struct PokemonSubstruct0
     u8 friendship;
 };
 
+/**
+ * Contains data about the Pokemon's currently known moves.
+ */
 struct PokemonSubstruct1
 {
     u16 moves[MAX_MON_MOVES];
     u8 pp[MAX_MON_MOVES];
 };
 
+/**
+ * Contains data about the Pokemon's EVs and contest stats. 
+ */
 struct PokemonSubstruct2
 {
     u8 hpEV;
@@ -35,6 +44,9 @@ struct PokemonSubstruct2
     u8 sheen;
 };
 
+/**
+ * Contains data about the Pokemon's catch-encounter infos, IVs, ability, ribbons and obedience.
+ */
 struct PokemonSubstruct3
 {
  /* 0x00 */ u8 pokerus;
@@ -75,6 +87,10 @@ struct PokemonSubstruct3
  /* 0x0B */ u32 obedient:1;
 };
 
+/**
+ * Union used to collect the four Pokemon Substructs.
+ * Contains four 12-bytes PokemonSubstruct, one per type, and an array raw of 6 u16 (12-bytes) for encryption
+ */
 union PokemonSubstruct
 {
     struct PokemonSubstruct0 type0;
@@ -84,6 +100,9 @@ union PokemonSubstruct
     u16 raw[6];
 };
 
+/**
+ * Contains the basic information on a Pokemon, excluding stats, level, status.
+ */
 struct BoxPokemon
 {
     u32 personality;
@@ -99,6 +118,10 @@ struct BoxPokemon
     u16 checksum;
     u16 unknown;
 
+    /**
+     * Union used for Pokemon encryption, decryption and checksum calculation.
+     * Contains an array of 4 12-bytes substructures (48 bytes), and an array raw of 12 u32 (48 bytes) for encryption. 
+     */
     union
     {
         u32 raw[12];
@@ -106,12 +129,17 @@ struct BoxPokemon
     } secure;
 };
 
+/**
+ * Contains all basic information on a Pokemon, plus its stats, level, status.
+ * One u16 variable is defined for each stat.
+ * A maxHP field is present, along with the hp one.
+ */
 struct Pokemon
 {
     struct BoxPokemon box;
     u32 status;
     u8 level;
-    u8 mail;
+    u8 mail;            //TODO: Delete mail system?
     u16 hp;
     u16 maxHP;
     u16 attack;
@@ -172,6 +200,9 @@ struct BattlePokemon
     /*0x54*/ u32 otId;
 };
 
+/**
+ * Contains the base stats of a Pokemon.
+ */
 struct BaseStats
 {
  /* 0x00 */ u8 baseHP;
@@ -205,6 +236,9 @@ struct BaseStats
             u8 noFlip : 1;
 };
 
+/**
+ * Contains data on a move's effect and parameters in battle. 
+ */
 struct BattleMove
 {
     u16 effect;

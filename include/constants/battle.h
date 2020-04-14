@@ -110,11 +110,11 @@
 
 // Volatile status ailments
 // These are removed after exiting the battle or switching out
-#define STATUS2_CONFUSION             0x00000007
+#define STATUS2_CONFUSION             0x00000007  // 4 bits: 0x1, 0x2, 0x4. Confusion lasts a maximum of four turns (?)
 #define STATUS2_FLINCHED              0x00000008
 #define STATUS2_UPROAR                0x00000070
-#define STATUS2_BIDE                  0x00000300  // two bits 0x100, 0x200
-#define STATUS2_LOCK_CONFUSE          0x00000C00
+#define STATUS2_BIDE                  0x00000300  // 2 bits: 0x100, 0x200
+#define STATUS2_LOCK_CONFUSE          0x00000C00  // 2 bits: 0x400, 0x800
 #define STATUS2_MULTIPLETURNS         0x00001000
 #define STATUS2_WRAPPED               0x00002000
 #define STATUS2_POWDER                0x00004000
@@ -239,6 +239,7 @@
 #define MOVE_RESULT_STURDIED           (1 << 8)
 #define MOVE_RESULT_NO_EFFECT          (MOVE_RESULT_MISSED | MOVE_RESULT_DOESNT_AFFECT_FOE | MOVE_RESULT_FAILED)
 
+//TODO: Add new weathers (Extremely harsh sunlight, Heavy rain, Strong winds)
 // Battle Weather flags
 #define WEATHER_RAIN_TEMPORARY      (1 << 0)
 #define WEATHER_RAIN_DOWNPOUR       (1 << 1)  // unused

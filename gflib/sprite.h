@@ -11,6 +11,12 @@ struct SpriteSheet
     u16 tag;
 };
 
+/**
+ * Contains info about a ?.
+ * @field data: compressed pixel data.
+ * @field size: uncompressed size of pixel data.
+ * @tag: tag to assign to the sheet.
+ */
 struct CompressedSpriteSheet
 {
     const u32 *data;  // LZ77 compressed pixel data
@@ -34,6 +40,11 @@ struct SpritePalette
     u16 tag;
 };
 
+/**
+ * Contains info about a palette.
+ * @field data: compressed palette data.
+ * @field tag: tag to assign to the palette.
+ */
 struct CompressedSpritePalette
 {
     const u32 *data;  // LZ77 compressed palette data

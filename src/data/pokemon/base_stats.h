@@ -1,3 +1,7 @@
+//TODO: Add gen 8 + Pikachu and Eevee
+//TODO: Update to gen 8
+//TODO: Fix items for all Pokemons (even those not in Gen 8)
+
 // Maximum value for a female Pokémon is 254 (MON_FEMALE) which is 100% female.
 // 255 (MON_GENDERLESS) is reserved for genderless Pokémon.
 #define PERCENT_FEMALE(percent) min(254, ((percent * 255) / 100))

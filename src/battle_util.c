@@ -255,6 +255,10 @@ static const u16 sPercentToModifier[] =
 
 #define X UQ_4_12
 
+/**
+ * Represents the type chart.
+ * Row represents the attacking type, column the defensive type.
+ */
 static const u16 sTypeEffectivenessTable[NUMBER_OF_MON_TYPES][NUMBER_OF_MON_TYPES] =
 {
 //   normal  fight   flying  poison  ground  rock    bug     ghost   steel   mystery fire    water   grass  electric psychic ice     dragon  dark    fairy

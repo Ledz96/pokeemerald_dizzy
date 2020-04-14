@@ -67,7 +67,7 @@ static u16 GiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move);
 static bool8 ShouldSkipFriendshipChange(void);
 
 // EWRAM vars
-EWRAM_DATA static u8 sLearningMoveTableID = 0;
+EWRAM_DATA static u8 sLearningMoveTableID = 0;  //Static index used to navigate the moves in the learnset table
 EWRAM_DATA u8 gPlayerPartyCount = 0;
 EWRAM_DATA u8 gEnemyPartyCount = 0;
 EWRAM_DATA struct Pokemon gPlayerParty[PARTY_SIZE] = {0};
@@ -93,6 +93,9 @@ static const struct CombinedMove sCombinedMoves[2] =
     {0xFFFF, 0xFFFF, 0xFFFF}
 };
 
+/**
+ * Defines an index based on Species or Hoenn ID; fills that position of an array with the specified index.
+ */
 #define SPECIES_TO_HOENN(name)      [SPECIES_##name - 1] = HOENN_DEX_##name
 #define SPECIES_TO_NATIONAL(name)   [SPECIES_##name - 1] = NATIONAL_DEX_##name
 #define HOENN_TO_NATIONAL(name)     [HOENN_DEX_##name - 1] = NATIONAL_DEX_##name
@@ -1380,6 +1383,11 @@ const struct SpindaSpot gSpindaSpotGraphics[] =
 
 #include "data/pokemon/item_effects.h"
 
+/**
+ * Defines stat gains and loss for each nature.
+ * One row per nature, one column per stat. 
+ * For each nature, a stat's value may be 1, 0 or -1.
+ */
 const s8 gNatureStatTable[][NUM_EV_STATS] =
 {
     // Atk Def Spd Sp.Atk Sp.Def
@@ -2357,6 +2365,7 @@ static const s8 sFriendshipEventModifiers[][3] =
     [FRIENDSHIP_EVENT_FAINT_LARGE]     = {-5, -5, -10},
 };
 
+ //TODO: Delete HMs
 static const u16 sHMMoves[] =
 {
     MOVE_CUT, MOVE_FLY, MOVE_SURF, MOVE_STRENGTH, MOVE_FLASH,
@@ -2405,6 +2414,11 @@ static const struct SpriteTemplate gUnknown_08329F28 =
 };
 
 // code
+
+/**
+ * Initializes all fields of a struct BoxPokemon variable to 0.
+ * @param boxMon: a pointer to the struct BoxPokemon variable that has to be initialized to 0 
+ */
 void ZeroBoxMonData(struct BoxPokemon *boxMon)
 {
     u8 *raw = (u8 *)boxMon;
@@ -2413,6 +2427,10 @@ void ZeroBoxMonData(struct BoxPokemon *boxMon)
         raw[i] = 0;
 }
 
+/**
+ * Initializes all fields of a struct Pokemon variable to 0.
+ * @param mon: a pointer to the struct Pokemon variable that has to be initialized to 0 
+ */
 void ZeroMonData(struct Pokemon *mon)
 {
     u32 arg;
@@ -2431,6 +2449,9 @@ void ZeroMonData(struct Pokemon *mon)
     SetMonData(mon, MON_DATA_MAIL, &arg);
 }
 
+/**
+ * Fills the player's party with empty Pokemons.
+ */ 
 void ZeroPlayerPartyMons(void)
 {
     s32 i;
@@ -2438,6 +2459,9 @@ void ZeroPlayerPartyMons(void)
         ZeroMonData(&gPlayerParty[i]);
 }
 
+/**
+ * Fills the opponent's party with empty Pokemons.
+ */
 void ZeroEnemyPartyMons(void)
 {
     s32 i;
@@ -2456,11 +2480,21 @@ void CreateMon(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 hasFix
     CalculateMonStats(mon);
 }
 
+/**
+ * Creates a Box Pokemon by setting the members of the struct to the specified values.
+ * @par boxMon: a pointer to the struct BoxPokemon variable that contains the created pokemon.
+ * @par species: the species of the pokemon.
+ * @par fixedIV: a value between 0 and 31, to assign to all IVs. If a value > 31 is given, IVs will be randomized.
+ * @par hasFixedPersonality: boolean that checks if the pokemon's personality has to be randomly generated or not.
+ * @par fixedPersonality: personality of the pokemon, if it is fixed (already existent).
+ * @par otIdType: specifies if the OT ID for the pokemon has to be randomly generated, it is of a known trainer, or it is the player's.
+ * @par fixedOtId: OT ID of the pokemon, if it is fixed (already existent).
+ */
 void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, u8 hasFixedPersonality, u32 fixedPersonality, u8 otIdType, u32 fixedOtId)
 {
     u8 speciesName[POKEMON_NAME_LENGTH + 1];
-    u32 personality;
-    u32 value;
+    u32 personality;    //Contains the personality of the pokemon
+    u32 value;          //Contains the OT ID of the pokemon
     u16 checksum;
 
     ZeroBoxMonData(boxMon);
@@ -2470,9 +2504,10 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     else
         personality = Random32();
 
-    //Determine original trainer ID
-    if (otIdType == OT_ID_RANDOM_NO_SHINY) //Pokemon cannot be shiny
+    //Determine and sets the original trainer ID
+    if (otIdType == OT_ID_RANDOM_NO_SHINY) //Pokemon cannot be shiny. Probably for NPCs
     {
+        //Makes sure that the pokemon is not shiny
         u32 shinyValue;
         do
         {
@@ -2507,6 +2542,8 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
     SetBoxMonData(boxMon, MON_DATA_OT_ID, &value);
 
+    //TODO: Delete or improve checksum calculation and encryption
+    //Calculates the checksum (based on OT ID and personality only) and stores it into the pokemon
     checksum = CalculateBoxMonChecksum(boxMon);
     SetBoxMonData(boxMon, MON_DATA_CHECKSUM, &checksum);
     EncryptBoxMon(boxMon);
@@ -2565,6 +2602,16 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     GiveBoxMonInitialMoveset(boxMon);
 }
 
+/**
+ * Creates a Pokemon with a specified nature, level and fixedIVs.
+ * The Pokemon is given the player's OT ID.
+ * The Pokemon personality is generated to match the parameters.
+ * @param mon: a pointer to the struct Pokemon variable to fill.
+ * @param species: species to assign to the Pokemon.
+ * @param level: level to assign to the Pokemon.
+ * @param fixedIV: IVs to assign to all of the Pokemon's stats.
+ * @param nature: nature to assign to the Pokemon.
+ */
 void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 nature)
 {
     u32 personality;
@@ -2578,6 +2625,18 @@ void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV,
     CreateMon(mon, species, level, fixedIV, 1, personality, OT_ID_PLAYER_ID, 0);
 }
 
+/**
+ * Creates a Pokemon with a specified nature, level and fixedIVs.
+ * The Pokemon is given the player's OT ID.
+ * The Pokemon personality is generated to match the parameters.
+ * @param mon: a pointer to the struct Pokemon variable to fill.
+ * @param species: species to assign to the Pokemon.
+ * @param level: level to assign to the Pokemon.
+ * @param fixedIV: IVs to assign to all of the Pokemon's stats.
+ * @param gender: gender to assign to the Pokemon.
+ * @param nature: nature to assign to the Pokemon.
+ * @param unownLetter: symbol the pokemon has, in case it is an Unown. Values outside of (1,28) will be ignored.
+ */
 void CreateMonWithGenderNatureLetter(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 gender, u8 nature, u8 unownLetter)
 {
     u32 personality;
@@ -2957,6 +3016,7 @@ bool8 sub_80688F8(u8 caseId, u8 battlerId)
     return TRUE;
 }
 
+//TODO: Make all deoxys forms available
 static u16 GetDeoxysStat(struct Pokemon *mon, s32 statId)
 {
     s32 ivVal, evVal;
@@ -3049,6 +3109,10 @@ void CreateObedientEnemyMon(void)
     }
 }
 
+/**
+ * Calculates a checksum for a pokemon based on its encrypted data (raw) in 4 different substruct.
+ * @param boxMon: pointer to the BoxPokemon struct the checksum is calculated upon.
+ */
 static u16 CalculateBoxMonChecksum(struct BoxPokemon *boxMon)
 {
     u16 checksum = 0;
@@ -3058,6 +3122,7 @@ static u16 CalculateBoxMonChecksum(struct BoxPokemon *boxMon)
     union PokemonSubstruct *substruct3 = GetSubstruct(boxMon, boxMon->personality, 3);
     s32 i;
 
+    //TODO: might be a single loop to avoid wasting computation
     for (i = 0; i < 6; i++)
         checksum += substruct0->raw[i];
 
@@ -3187,6 +3252,13 @@ u16 GiveMoveToMon(struct Pokemon *mon, u16 move)
     return GiveMoveToBoxMon(&mon->box, move);
 }
 
+/**
+ * Attempts to teach a move to a BoxPokemon. 
+ * If the pokemon knows 4 moves already, the operation is aborted.
+ * @param boxMon: a pointer to the struct BoxPokemon that would learn the move.
+ * @param move: move that the function attempts to teach.
+ * @return: the move index, if the move has been taught. -1, if the Pokemon knows 4 moves. -2, if the Pokemon already knows the move.   
+ */
 static u16 GiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move)
 {
     s32 i;
@@ -3205,6 +3277,13 @@ static u16 GiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move)
     return MON_HAS_MAX_MOVES;
 }
 
+/**
+ * Attempts to teach a move to a BattlePokemon. 
+ * If the pokemon knows 4 moves already, the operation is aborted.
+ * @param boxMon: a pointer to the struct BoxPokemon that would learn the move.
+ * @param move: move that the function attempts to teach.
+ * @return: the move index, if the move has been taught. -1, if the Pokemon knows 4 moves.
+ */
 u16 GiveMoveToBattleMon(struct BattlePokemon *mon, u16 move)
 {
     s32 i;
@@ -3234,11 +3313,19 @@ void SetBattleMonMoveSlot(struct BattlePokemon *mon, u16 move, u8 slot)
     mon->pp[slot] = gBattleMoves[move].pp;
 }
 
+/**
+ * Assigns an initial moveset to a Pokemon.
+ * @param mon: pointer to the avariable struct Pokemon that contains the moves to initialize. 
+ */
 void GiveMonInitialMoveset(struct Pokemon *mon)
 {
     GiveBoxMonInitialMoveset(&mon->box);
 }
 
+/**
+ * Assigns an initial moveset to a BoxPokemon.
+ * @param boxMon: pointer to the avariable struct BoxPokemon that contains the moves to initialize. 
+ */
 void GiveBoxMonInitialMoveset(struct BoxPokemon *boxMon)
 {
     u16 species = GetBoxMonData(boxMon, MON_DATA_SPECIES, NULL);
@@ -3254,16 +3341,22 @@ void GiveBoxMonInitialMoveset(struct BoxPokemon *boxMon)
     }
 }
 
+/**
+ * Attempts to teach a move to a Pokemon, based on the Pokemon's level.
+ * If the firstMove bit is up, the function will look for the first move learned at the level and try to teach it.
+ * If a move is found for the Pokemon's level, an attempt is made to teach it, and the index is incremented to the next move.
+ * @param mon: a pointer to the specified struct Pokemon variable.
+ * @param firstMove: a bool8 that states whether or not the move is the first one being taught for that level.
+ * @return: 0 in case no move can be learned at the current level. Return value of GiveMoveToMon otherwise.
+ */
 u16 MonTryLearningNewMove(struct Pokemon *mon, bool8 firstMove)
 {
     u32 retVal = 0;
     u16 species = GetMonData(mon, MON_DATA_SPECIES, NULL);
     u8 level = GetMonData(mon, MON_DATA_LEVEL, NULL);
 
-    // since you can learn more than one move per level
-    // the game needs to know whether you decided to
-    // learn it or keep the old set to avoid asking
-    // you to learn the same move over and over again
+    /* since you can learn more than one move per level, the game needs to know whether you decided to
+        learn it or keep the old set to avoid asking you to learn the same move over and over again */
     if (firstMove)
     {
         sLearningMoveTableID = 0;
@@ -3286,6 +3379,11 @@ u16 MonTryLearningNewMove(struct Pokemon *mon, bool8 firstMove)
     return retVal;
 }
 
+/**
+ * Replaces the first move of the Pokemon with a new one.
+ * @param mon: a pointer to the struct Pokemon variable that has to be updated.
+ * @param move: move to teach to the mon.
+ */
 void DeleteFirstMoveAndGiveMoveToMon(struct Pokemon *mon, u16 move)
 {
     s32 i;
@@ -3313,6 +3411,11 @@ void DeleteFirstMoveAndGiveMoveToMon(struct Pokemon *mon, u16 move)
     SetMonData(mon, MON_DATA_PP_BONUSES, &ppBonuses);
 }
 
+/**
+ * Replaces the first move of the Pokemon with a new one.
+ * @param boxMon: a pointer to the struct boxMon variable that has to be updated.
+ * @param move: move to teach to the mon.
+ */
 void DeleteFirstMoveAndGiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move)
 {
     s32 i;
@@ -3320,14 +3423,17 @@ void DeleteFirstMoveAndGiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move)
     u8 pp[MAX_MON_MOVES];
     u8 ppBonuses;
 
+    //Reads starting from MON_DATA_MOVE_2: the first one will be replaced
     for (i = 0; i < MAX_MON_MOVES - 1; i++)
     {
         moves[i] = GetBoxMonData(boxMon, MON_DATA_MOVE2 + i, NULL);
         pp[i] = GetBoxMonData(boxMon, MON_DATA_PP2 + i, NULL);
     }
 
+    //Shift by 2 to the right: the first 2 bits will become 0
     ppBonuses = GetBoxMonData(boxMon, MON_DATA_PP_BONUSES, NULL);
     ppBonuses >>= 2;
+    //Last move is replaced by the new one
     moves[3] = move;
     pp[3] = gBattleMoves[move].pp;
 
@@ -3507,6 +3613,11 @@ void SetMultiuseSpriteTemplateToTrainerFront(u16 arg0, u8 battlerPosition)
     gMultiuseSpriteTemplate.anims = gTrainerFrontAnimsPtrTable[arg0];
 }
 
+/**
+ * Encrypts the BoxMon data into the raw field, using OT ID and personality.
+ * The encryption is a simple XOR between OT ID and personality (since the original value of raw is 0).
+ * @param boxMon: pointer to the struct BoxPokemon that has to be encrypted.
+ */
 static void EncryptBoxMon(struct BoxPokemon *boxMon)
 {
     u32 i;
@@ -3517,6 +3628,11 @@ static void EncryptBoxMon(struct BoxPokemon *boxMon)
     }
 }
 
+/**
+ * Decrypts the BoxMon data into the raw field, using OT ID and personality.
+ * The decryption is a simple XOR between raw and OT ID first, personality second (look at how the encryption happens).
+ * @param boxMon: pointer to the struct BoxPokemon that has to be encrypted.
+ */
 static void DecryptBoxMon(struct BoxPokemon *boxMon)
 {
     u32 i;
@@ -3574,10 +3690,22 @@ case n:                                                                 \
     }                                                                   \
 
 
+/**
+ * Returns a substruct based on the Pokemon's personality and the required substruct type.
+ * @param boxMon: pointer to a BoxPokemon struct that represents the pokemon to retrieve the substruct from.
+ * @param personality: personality of the pokemon.
+ * @param substructType: type of the substruct to retrieve. In a (0,3) range (extremes included).
+ */
 static union PokemonSubstruct *GetSubstruct(struct BoxPokemon *boxMon, u32 personality, u8 substructType)
 {
     union PokemonSubstruct *substruct = NULL;
 
+    /**
+     * Each Pokemon contains a secure field with 4 substructs. 
+     * Personality % 24 is used to determine which of the 4! permutation of {0,1,2,3} must be used to access the correct substruct from the array in BoxPokemon::secure.
+     * The used permutation represents the order in which the different substructs are stored in the array. This is based on personality.
+     * This is done for security reasons.
+     */
     switch (personality % 24)
     {
         SUBSTRUCT_CASE( 0,0,1,2,3)
@@ -3609,10 +3737,18 @@ static union PokemonSubstruct *GetSubstruct(struct BoxPokemon *boxMon, u32 perso
     return substruct;
 }
 
+/**
+ * Retrieves a field from a struct Pokemon.
+ * @param mon: pointer to the struct Pokemon that contains the data to retrieve.
+ * @param field: field that has to be retrieved.
+ * @param data: variable that will store the retrieved data, in case it's a pointer. 
+ * @return the field to be retrieved. In case the field is a pointer, it's stored in data, and the length in bytes is returned.
+ */
 u32 GetMonData(struct Pokemon *mon, s32 field, u8* data)
 {
     u32 ret;
 
+     //TODO: Overhaul Deoxys mechanics
     switch (field)
     {
     case MON_DATA_STATUS:
@@ -3677,6 +3813,13 @@ u32 GetMonData(struct Pokemon *mon, s32 field, u8* data)
     return ret;
 }
 
+/**
+ * Retrieves a field from a struct boxPokemon.
+ * @param boxMon: pointer to the struct boxPokemon that contains the data to retrieve.
+ * @param field: field that has to be retrieved.
+ * @param data: variable that will store the retrieved data, in case it's a pointer. 
+ * @return the field to be retrieved. In case the field is a pointer, it's stored in data, and the length in bytes is returned.
+ */
 u32 GetBoxMonData(struct BoxPokemon *boxMon, s32 field, u8 *data)
 {
     s32 i;
@@ -3687,6 +3830,7 @@ u32 GetBoxMonData(struct BoxPokemon *boxMon, s32 field, u8 *data)
     struct PokemonSubstruct3 *substruct3 = NULL;
 
     // Any field greater than MON_DATA_ENCRYPT_SEPARATOR is encrypted and must be treated as such
+    //Check if the field is in the Pokemon substruct. If so, retrieve the substructs and decrypts. Makes Pokemon bad egg if checksum doesn't correspond.
     if (field > MON_DATA_ENCRYPT_SEPARATOR)
     {
         substruct0 = &(GetSubstruct(boxMon, boxMon->personality, 0)->type0);
@@ -4032,6 +4176,14 @@ u32 GetBoxMonData(struct BoxPokemon *boxMon, s32 field, u8 *data)
 #define SET16(lhs) (lhs) = data[0] + (data[1] << 8)
 #define SET32(lhs) (lhs) = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24)
 
+
+/**
+ * Assigns a given value to a specified field of a struct Pokemon variable.
+ * @param mon: a pointer to the struct Pokemon variable to modify.
+ * @param field: the field to modify.
+ * @param dataArg: a void pointer that represents the value to assign. Since different data types might be passed, the parameter is assigned to a void*.
+ * No check is performed before dereferencing the pointer. Correct data size (corresponding to the field) is assumed.
+ */
 void SetMonData(struct Pokemon *mon, s32 field, const void *dataArg)
 {
     const u8 *data = dataArg;
@@ -4076,6 +4228,13 @@ void SetMonData(struct Pokemon *mon, s32 field, const void *dataArg)
     }
 }
 
+/**
+ * Assigns a given value to a specified field of a struct BoxPokemon variable.
+ * @param mon: a pointer to the struct BoxPokemon variable to modify.
+ * @param field: the field to modify.
+ * @param dataArg: a void pointer that represents the value to assign. Since different data types might be passed, the parameter is assigned to a void*.
+ * No check is performed before dereferencing the pointer. Correct data size (corresponding to the field) is assumed.
+ */
 void SetBoxMonData(struct BoxPokemon *boxMon, s32 field, const void *dataArg)
 {
     const u8 *data = dataArg;
@@ -4604,7 +4763,6 @@ void PokemonToBattleMon(struct Pokemon *src, struct BattlePokemon *dst)
 
     for (i = 0; i < MAX_MON_MOVES; i++)
     {
-<<<<<<< HEAD
         dst->moves[i] = GetMonData(src, MON_DATA_MOVE1 + i, NULL);
         dst->pp[i] = GetMonData(src, MON_DATA_PP1 + i, NULL);
     }
@@ -4650,47 +4808,6 @@ void CopyPlayerPartyMonToBattleData(u8 battlerId, u8 partyIndex)
 {
     PokemonToBattleMon(&gPlayerParty[partyIndex], &gBattleMons[battlerId]);
     gBattleStruct->hpOnSwitchout[GetBattlerSide(battlerId)] = gBattleMons[battlerId].hp;
-=======
-        gBattleMons[battlerId].moves[i] = GetMonData(&gPlayerParty[partyIndex], MON_DATA_MOVE1 + i, NULL);
-        gBattleMons[battlerId].pp[i] = GetMonData(&gPlayerParty[partyIndex], MON_DATA_PP1 + i, NULL);
-    }
-
-    gBattleMons[battlerId].ppBonuses = GetMonData(&gPlayerParty[partyIndex], MON_DATA_PP_BONUSES, NULL);
-    gBattleMons[battlerId].friendship = GetMonData(&gPlayerParty[partyIndex], MON_DATA_FRIENDSHIP, NULL);
-    gBattleMons[battlerId].experience = GetMonData(&gPlayerParty[partyIndex], MON_DATA_EXP, NULL);
-    gBattleMons[battlerId].hpIV = GetMonData(&gPlayerParty[partyIndex], MON_DATA_HP_IV, NULL);
-    gBattleMons[battlerId].attackIV = GetMonData(&gPlayerParty[partyIndex], MON_DATA_ATK_IV, NULL);
-    gBattleMons[battlerId].defenseIV = GetMonData(&gPlayerParty[partyIndex], MON_DATA_DEF_IV, NULL);
-    gBattleMons[battlerId].speedIV = GetMonData(&gPlayerParty[partyIndex], MON_DATA_SPEED_IV, NULL);
-    gBattleMons[battlerId].spAttackIV = GetMonData(&gPlayerParty[partyIndex], MON_DATA_SPATK_IV, NULL);
-    gBattleMons[battlerId].spDefenseIV = GetMonData(&gPlayerParty[partyIndex], MON_DATA_SPDEF_IV, NULL);
-    gBattleMons[battlerId].personality = GetMonData(&gPlayerParty[partyIndex], MON_DATA_PERSONALITY, NULL);
-    gBattleMons[battlerId].status1 = GetMonData(&gPlayerParty[partyIndex], MON_DATA_STATUS, NULL);
-    gBattleMons[battlerId].level = GetMonData(&gPlayerParty[partyIndex], MON_DATA_LEVEL, NULL);
-    gBattleMons[battlerId].hp = GetMonData(&gPlayerParty[partyIndex], MON_DATA_HP, NULL);
-    gBattleMons[battlerId].maxHP = GetMonData(&gPlayerParty[partyIndex], MON_DATA_MAX_HP, NULL);
-    gBattleMons[battlerId].attack = GetMonData(&gPlayerParty[partyIndex], MON_DATA_ATK, NULL);
-    gBattleMons[battlerId].defense = GetMonData(&gPlayerParty[partyIndex], MON_DATA_DEF, NULL);
-    gBattleMons[battlerId].speed = GetMonData(&gPlayerParty[partyIndex], MON_DATA_SPEED, NULL);
-    gBattleMons[battlerId].spAttack = GetMonData(&gPlayerParty[partyIndex], MON_DATA_SPATK, NULL);
-    gBattleMons[battlerId].spDefense = GetMonData(&gPlayerParty[partyIndex], MON_DATA_SPDEF, NULL);
-    gBattleMons[battlerId].abilityNum = GetMonData(&gPlayerParty[partyIndex], MON_DATA_ABILITY_NUM, NULL);
-    gBattleMons[battlerId].otId = GetMonData(&gPlayerParty[partyIndex], MON_DATA_OT_ID, NULL);
-    gBattleMons[battlerId].type1 = gBaseStats[gBattleMons[battlerId].species].type1;
-    gBattleMons[battlerId].type2 = gBaseStats[gBattleMons[battlerId].species].type2;
-    gBattleMons[battlerId].ability = GetAbilityBySpecies(gBattleMons[battlerId].species, gBattleMons[battlerId].abilityNum);
-    GetMonData(&gPlayerParty[partyIndex], MON_DATA_NICKNAME, nickname);
-    StringCopy10(gBattleMons[battlerId].nickname, nickname);
-    GetMonData(&gPlayerParty[partyIndex], MON_DATA_OT_NAME, gBattleMons[battlerId].otName);
-
-    hpSwitchout = &gBattleStruct->hpOnSwitchout[GetBattlerSide(battlerId)];
-    *hpSwitchout = gBattleMons[battlerId].hp;
-
-    for (i = 0; i < 8; i++)
-        gBattleMons[battlerId].statStages[i] = 6;
-
-    gBattleMons[battlerId].status2 = 0;
->>>>>>> 887fb1b45c849705b34bfdcab182b63e624d7772
     sub_803FA70(battlerId);
     ClearTemporarySpeciesSpriteData(battlerId, FALSE);
 }
