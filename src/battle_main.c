@@ -245,7 +245,7 @@ EWRAM_DATA u16 gBattleMovePower = 0;
 EWRAM_DATA u16 gMoveToLearn = 0;
 EWRAM_DATA u8 gBattleMonForms[MAX_BATTLERS_COUNT] = {0};
 EWRAM_DATA u32 gFieldStatuses = 0;
-EWRAM_DATA struct FieldTimer gFieldTimers = {0};
+EWRAM_DATA struct FieldTimer gFieldTimers = {0};    //Handles timers for moves such as terrains, sports, rooms etc.
 EWRAM_DATA u8 gBattlerAbility = 0;
 EWRAM_DATA u16 gPartnerSpriteId = 0;
 
